@@ -194,4 +194,8 @@ docker network rm my-bridge-net
 
 ---
 
-This setup ensures containers within the same **custom bridge network** can communicate using their **names**, improving flexibility and isolation.
+docker run --name node-docker-container -d -e PORT=8080 -p 8080:8090 --rm  ajayjb/node-docker
+
+we dont need to give all above flags, we use docker compose 
+
+This setup ensures containers within the same **custom bridge network** can communicate using their **names**, improving flexibility and isolation

@@ -1,12 +1,17 @@
 ---
 
 services:
-  node-docker:
+  node-docker-app:
+    container_name: node-docker-app
     image: ajayjb/node-docker
     build:
       context: node-docker
       dockerfile: Dockerfile
-    ports: 
+    ports:
       - 8080:8080
+    env_file:
+      - ./node-docker/dev.env
     environment:
       - PORT=8080
+      - APP_TOKEN=${APP_TOKEN}
+    
