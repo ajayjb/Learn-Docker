@@ -1,5 +1,4 @@
 ---
-
 services:
   node-docker-app:
     container_name: node-docker-app
@@ -11,7 +10,24 @@ services:
       - 8080:8080
     env_file:
       - ./node-docker/dev.env
+    # secrets:
+    #   - api_key
+    #   - source: api_key
+    #     target: /api_key.txt
+    # configs:
+    #   - my_config
+    #   - source: my_config
+    #     target: /my_config.yaml
     environment:
       - PORT=8080
       - APP_TOKEN=${APP_TOKEN}
+    volumes:  
+      - ./node-docker/config.yaml:/config.yaml
     
+secrets:
+  api_key:
+    file: ./node-docker/api_key.txt
+
+configs:
+  my_config:
+    file: ./node-docker/config.yaml

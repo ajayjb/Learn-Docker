@@ -1,0 +1,89 @@
+---
+services:
+  node-docker-app:
+    container_name: node-docker-c
+    restart: always
+    image: ajayjb/node-docker
+    build:
+      context: node-docker
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    env_file:
+      - ./node-docker/dev.env
+    secrets:
+      - api_key
+      - source: api_key
+        target: /api_key.txt
+    configs:
+      - my_config
+      - source: my_config
+        target: /my_config.yaml
+    environment:
+      - PORT=8080
+      - APP_TOKEN=${APP_TOKEN}
+    volumes:
+      - ./node-docker/config.yaml:/config.yaml
+      - ./node-docker/src:/usr/app/src
+      - ./node-docker/package.json:/usr/app/package.json
+      - node_modules:/usr/app/node_modules
+    depends_on:
+      - postgres
+      - mongo
+    networks:
+      - private
+
+  postgres:
+    image: postgres
+    container_name: postgres-c
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: myUser
+      POSTGRES_DB: myDb
+      POSTGRES_PASSWORD_FILE: /run/secrets/pg_password
+    secrets:
+      - pg_password
+    volumes:
+      - pg_database:/var/lib/postgresql/data
+    networks:
+      - private
+  
+  mongo:
+    image: mongo
+    container_name: mongo-c
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: myUser
+      MONGO_INITDB_DATABASE: myDb
+      MONGO_INITDB_ROOT_PASSWORD: /run/secrets/mongo_password
+    secrets:
+      - mongo_password
+    volumes:
+      - mongo_database:/data/db
+    networks:
+      - private
+
+secrets:
+  api_key:
+    file: ./node-docker/api_key.txt
+  pg_password:
+    file: ./pg_password.txt
+  mongo_password:
+    file: ./mongo_password.txt
+
+configs:
+  my_config:
+    file: ./node-docker/config.yaml
+
+volumes:
+  node_modules:
+  pg_database:
+  mongo_database:
+
+networks:
+  private:
+    driver: bridge

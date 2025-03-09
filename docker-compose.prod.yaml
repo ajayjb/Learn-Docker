@@ -1,0 +1,37 @@
+---
+services:
+  node-docker-app:
+    container_name: node-docker-c
+    image: ajayjb/node-docker
+    build:
+      context: node-docker
+      dockerfile: Dockerfile.prod
+    ports:
+      - 8080:8080
+    env_file:
+      - ./node-docker/prod.env
+    secrets:
+      # - api_key
+      # - source: api_key
+      #   target: /api_key.txt
+    configs:
+      # - my_config
+      # - source: my_config
+      #   target: /my_config.yaml
+    environment:
+      - PORT=8080
+      - APP_TOKEN=${APP_TOKEN}
+    volumes:  
+      - ./node-docker/config.yaml:/config.yaml
+    
+secrets:
+  api_key:
+    file: ./node-docker/api_key.txt
+  pg_password:
+    file: ./pg_password.txt
+  mongo_password:
+    file: ./mongo_password.txt
+
+configs:
+  my_config:
+    file: ./node-docker/config.yaml
