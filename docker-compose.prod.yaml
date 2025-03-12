@@ -1,29 +1,132 @@
 ---
 services:
-  node-docker-app:
-    container_name: node-docker-c
-    image: ajayjb/node-docker
+  nginx:
+    image: jonasal/nginx-certbot:5.2.1-nginx1.27.0
+    ports:
+      - 80:80
+      - 443:443
+    env_file:
+      - ./nginx-certbot.env
+    configs:
+      - source: myapp_config
+        target: /etc/nginx/user_conf.d/myapp.conf
+    volumes:
+      - nginx_secrets:/etc/letsencrypt
+    networks:
+      - public
+    depends_on:
+      node-app:
+        condition: service_healthy
+        restart: true
+
+  node-app:
+    # container_name: node-docker-c
+    restart: always
+    # image: ajayjb/node-docker
     build:
       context: node-docker
-      dockerfile: Dockerfile.prod
-    ports:
-      - 8080:8080
+      dockerfile: Dockerfile
+    # ports:
+    #   - 8060:8080
     env_file:
       - ./node-docker/prod.env
     secrets:
-      # - api_key
-      # - source: api_key
-      #   target: /api_key.txt
+      - api_key
+      - source: api_key
+        target: /api_key.txt
     configs:
-      # - my_config
-      # - source: my_config
-      #   target: /my_config.yaml
+      - my_config
+      - source: my_config
+        target: /my_config.yaml
     environment:
       - PORT=8080
       - APP_TOKEN=${APP_TOKEN}
-    volumes:  
+      - MONGO_USER_NAME=test_user
+      - MONGO_PORT=27017
+      - MONGO_HOST=mongo
+      - MONGO_DATABASE=mydb
+    volumes:
       - ./node-docker/config.yaml:/config.yaml
-    
+      - ./node-docker/src:/usr/app/src
+      - ./node-docker/package.json:/usr/app/package.json
+      - node_modules:/usr/app/node_modules
+    depends_on:
+      - postgres
+      - mongo
+    networks:
+      - private
+      - public
+    healthcheck:
+      # OK if status code between 200 to 399
+      test: ["CMD", "curl", "-f", "http://localhost:8080/about"]
+      interval: 5s
+      retries: 5
+      start_period: 15s
+      timeout: 5s
+    deploy:
+      replicas: 4
+
+  postgres:
+    image: postgres
+    # container_name: postgres-c
+    restart: always
+    # ports:
+    #   - 5435:5432
+    environment:
+      POSTGRES_USER: myUser
+      POSTGRES_DB: mydb
+      POSTGRES_PASSWORD_FILE: /run/secrets/pg_password
+    secrets:
+      - pg_password
+    volumes:
+      - pg_database:/var/lib/postgresql/data
+    networks:
+      - private
+
+  mongo:
+    image: mongo
+    # container_name: mongo-c
+    restart: always
+    # ports:
+    #   - 27020:27017
+    env_file:
+      - ./node-docker/mongo.prod.env
+    # environment:
+    #   - MONGO_INITDB_ROOT_USERNAME=test@user
+    #   - MONGO_INITDB_DATABASE=myDb
+    #   - MONGO_INITDB_ROOT_PASSWORD=Admin@123
+    # Password file for mongo not working not sure why thats why I have used env
+    secrets:
+      - mongo_password
+    volumes:
+      - mongo_database:/data/db
+    networks:
+      - private
+
+  mongo-express:
+    image: mongo-express
+    # container_name: mongo-express-c
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: test_user
+      ME_CONFIG_MONGODB_ADMINPASSWORD: Admin_123
+      ME_CONFIG_MONGODB_URL: mongodb://test_user:Admin_123@mongo:27017/
+      # Use file for above
+      ME_CONFIG_BASICAUTH: true
+    depends_on:
+      - mongo
+    networks:
+      - private
+      - public
+
+  alpine:
+    image: alpine
+    command: ping google.com
+    networks:
+      - private
+
 secrets:
   api_key:
     file: ./node-docker/api_key.txt
@@ -35,3 +138,19 @@ secrets:
 configs:
   my_config:
     file: ./node-docker/config.yaml
+  # nginx_config:
+  #   file: ./nginx.conf
+  myapp_config:
+    file: ./myapp.conf
+
+volumes:
+  node_modules:
+  pg_database:
+  mongo_database:
+  nginx_secrets:
+
+networks:
+  private:
+    driver: bridge
+  public:
+    driver: bridge

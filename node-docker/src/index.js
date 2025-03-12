@@ -4,12 +4,35 @@ import fs from "fs";
 import yaml from "js-yaml";
 import morgan from "morgan";
 import "dotenv/config";
+import mongoose from "mongoose";
 
 const app = express();
 
 app.use(cors());
 
 app.use(morgan("combined"));
+
+app.use(express.json())
+
+const UserSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+  },
+  { timestamps: true }
+);
+
+const UserModel = mongoose.model("User", UserSchema);
 
 app.get("/", (req, res) => {
   return res.status(200).send("Hi there new world!");
@@ -93,10 +116,42 @@ app.post("/volumes", (req, res) => {
   return res.status(200).send({ readFile });
 });
 
-app.post("/check-health", (req, res) => {
+app.get("/about", (req, res) => {
   return res.status(200).send({});
 });
 
-app.listen(Number(process.env.PORT), () => {
-  console.log(`Server running on port ${process.env.PORT}`);
+app.post("/user/create", async (req, res) => {
+  console.log(req.body)
+  return res.status(200).send({ data: await new UserModel(req.body).save() });
 });
+
+app.get("/user/get", async (req, res) => {
+  return res.status(200).send({ data: await UserModel.find().lean() });
+});
+
+console.log(
+  `mongodb://${process.env.MONGO_USER_NAME}:${process.env.DB_PASSWORD_MONGO}@${
+    process.env.MONGO_HOST
+  }:${Number(process.env.MONGO_PORT)}/${process.env.MONGO_DATABASE}`
+);
+
+mongoose
+  .connect(
+    `mongodb://${process.env.MONGO_USER_NAME}:${
+      process.env.DB_PASSWORD_MONGO
+    }@${process.env.MONGO_HOST}:${Number(process.env.MONGO_PORT)}/${
+      process.env.MONGO_DATABASE
+    }?authSource=admin`,
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  )
+  .then((connection) => {
+    console.log("Connected to database" + connection.connection.host);
+
+    app.listen(Number(process.env.PORT), () => {
+      console.log(`Server running on port ${process.env.PORT}`);
+    });
+  })
+  .catch((error) => console.log(error));

