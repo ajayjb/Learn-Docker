@@ -33,8 +33,10 @@ services:
         target: /etc/nginx/nginx.conf
       - source: certificate_origin
         target: /etc/nginx/ssl/origin.pem
-      - source: primary_key
-        target: /etc/nginx/ssl/primary.key
+      - source: private_key
+        target: /etc/nginx/ssl/private.key
+      - source: intro_html
+        target: /var/www/html/intro.html
     networks:
       - public
     depends_on:
@@ -70,9 +72,9 @@ services:
       - MONGO_DATABASE=mydb
     volumes:
       - ./node-docker/config.yaml:/config.yaml
-      - ./node-docker/src:/usr/app/src
-      - ./node-docker/package.json:/usr/app/package.json
-      - node_modules:/usr/app/node_modules
+      # - ./node-docker/src:/usr/app/src
+      # - ./node-docker/package.json:/usr/app/package.json
+      # - node_modules:/usr/app/node_modules
     depends_on:
       - postgres
       - mongo
@@ -144,11 +146,11 @@ services:
       - private
       - public
 
-  alpine:
-    image: alpine
-    command: ping google.com
-    networks:
-      - private
+  # alpine:
+  #   image: alpine
+  #   command: ping google.com
+  #   networks:
+  #     - private
 
 secrets:
   api_key:
@@ -167,11 +169,13 @@ configs:
   #   file: ./myapp.conf
   certificate_origin:
     file: ./certs/origin.pem
-  primary_key:
-    file: ./certs/primary.key
+  private_key:
+    file: ./certs/private.key
+  intro_html:
+    file: ./assets/intro.html
 
 volumes:
-  node_modules:
+  # node_modules:
   pg_database:
   mongo_database:
   nginx_secrets:

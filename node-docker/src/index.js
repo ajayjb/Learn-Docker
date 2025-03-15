@@ -5,8 +5,9 @@ import yaml from "js-yaml";
 import morgan from "morgan";
 import "dotenv/config";
 import mongoose from "mongoose";
-import path from 'path';
+import path from "path";
 import { fileURLToPath } from "url";
+import { createProxyMiddleware } from 'http-proxy-middleware';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,7 +19,7 @@ app.use(cors());
 
 app.use(morgan("combined"));
 
-app.use(express.json())
+app.use(express.json());
 
 const UserSchema = new mongoose.Schema(
   {
@@ -41,7 +42,7 @@ const UserSchema = new mongoose.Schema(
 const UserModel = mongoose.model("User", UserSchema);
 
 app.get("/", (req, res) => {
-  return res.sendFile(path.join(root_dirname, "assets/coming.html"));
+  return res.status(200).send("Hi there new world!");
 });
 
 app.get("/getPassword", (req, res) => {
@@ -122,12 +123,22 @@ app.post("/volumes", (req, res) => {
   return res.status(200).send({ readFile });
 });
 
+// Proxy pass not working properly
+app.use(
+  "/mongo-express/playground",
+  createProxyMiddleware({
+    target: "http://mongo-express:8081", 
+    changeOrigin: true, 
+    pathRewrite: { '^/mongo-express/playground': '' },  
+  })
+);
+
 app.get("/about", (req, res) => {
   return res.status(200).send({});
 });
 
 app.post("/user/create", async (req, res) => {
-  console.log(req.body)
+  console.log(req.body);
   return res.status(200).send({ data: await new UserModel(req.body).save() });
 });
 
