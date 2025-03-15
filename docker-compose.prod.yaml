@@ -1,17 +1,40 @@
 ---
 services:
+# To generate ssl certificates using lets encrypt
+  # nginx:
+  #   image: jonasal/nginx-certbot:latest
+  #   ports:
+  #     - 80:80
+  #     - 443:443
+  #   env_file:
+  #     - ./nginx-certbot.env
+  #   configs:
+  #     - source: myapp_config
+  #       target: /etc/nginx/user_conf.d/myapp.conf
+  #     - source: codewave_html
+  #   volumes:
+  #     - nginx_secrets:/etc/letsencrypt
+  #     - target: ./codewave.html:/var/codewave.html
+  #   networks:
+  #     - public
+  #   depends_on:
+  #     node-app:
+  #       condition: service_healthy
+  #       restart: true
+
+# If we are using cloudfront full strict
   nginx:
-    image: jonasal/nginx-certbot:5.2.1-nginx1.27.0
+    image: nginx:1.27.4-alpine
     ports:
       - 80:80
       - 443:443
-    env_file:
-      - ./nginx-certbot.env
     configs:
-      - source: myapp_config
-        target: /etc/nginx/user_conf.d/myapp.conf
-    volumes:
-      - nginx_secrets:/etc/letsencrypt
+      - source: nginx_config
+        target: /etc/nginx/nginx.conf
+      - source: certificate_origin
+        target: /etc/nginx/ssl/origin.pem
+      - source: primary_key
+        target: /etc/nginx/ssl/primary.key
     networks:
       - public
     depends_on:
@@ -90,7 +113,7 @@ services:
     # ports:
     #   - 27020:27017
     env_file:
-      - ./node-docker/mongo.prod.env
+      - ./mongo.prod.env
     # environment:
     #   - MONGO_INITDB_ROOT_USERNAME=test@user
     #   - MONGO_INITDB_DATABASE=myDb
@@ -107,8 +130,8 @@ services:
     image: mongo-express
     # container_name: mongo-express-c
     restart: always
-    ports:
-      - 8081:8081
+    # ports:
+    #   - 8081:8081
     environment:
       ME_CONFIG_MONGODB_ADMINUSERNAME: test_user
       ME_CONFIG_MONGODB_ADMINPASSWORD: Admin_123
@@ -138,10 +161,14 @@ secrets:
 configs:
   my_config:
     file: ./node-docker/config.yaml
-  # nginx_config:
-  #   file: ./nginx.conf
-  myapp_config:
-    file: ./myapp.conf
+  nginx_config:
+    file: ./nginx.prod.conf
+  # myapp_config:
+  #   file: ./myapp.conf
+  certificate_origin:
+    file: ./certs/origin.pem
+  primary_key:
+    file: ./certs/primary.key
 
 volumes:
   node_modules:

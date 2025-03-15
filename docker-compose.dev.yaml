@@ -10,10 +10,21 @@ services:
         target: /etc/nginx/nginx.conf
     networks:
       - public
-    depends_on:
-      node-app:
-        condition: service_healthy
-        restart: true
+    # depends_on:
+    #   node-app:
+    #     condition: service_healthy
+    #     restart: true
+
+# env variables mentioned in compose enf-file and environment only available run time, 
+# we can stil pass arguments to build as agrs and use them in Dockerfile
+
+# In this .env are placed at both service level and root (For learning),
+# In compose file we we just mention image tag, 
+# it will pull the image then we need .env in compose for for process run time, (if are not giving .env in Dockerfile)
+# .env files at root level to feed to the container (this is when we are not pushing service code to the server), 
+
+# but if we are building image using compose file then .env are available at service file
+# are more then enough we dont need them at root level
 
   node-app:
     # container_name: node-docker-c
@@ -44,6 +55,7 @@ services:
     volumes:
       - ./node-docker/config.yaml:/config.yaml
       - ./node-docker/src:/usr/app/src
+      - ./node-docker/src:/usr/app/test-folder
       - ./node-docker/package.json:/usr/app/package.json
       - node_modules:/usr/app/node_modules
     depends_on:
@@ -52,13 +64,13 @@ services:
     networks:
       - private
       - public
-    healthcheck:
-      # OK if status code between 200 to 399
-      test: ["CMD", "curl", "-f", "http://localhost:8080/about"]
-      interval: 5s
-      retries: 5
-      start_period: 15s
-      timeout: 5s
+    # healthcheck:
+    #   # OK if status code between 200 to 399
+    #   test: ["CMD", "curl", "-f", "http://localhost:8080/about"]
+    #   interval: 5s
+    #   retries: 5
+    #   start_period: 15s
+    #   timeout: 5s
     # deploy:
     #   replicas: 4
 
@@ -86,7 +98,7 @@ services:
     ports:
       - 27020:27017
     env_file:
-      - ./node-docker/mongo.dev.env
+      - ./mongo.dev.env
     # environment:
     #   - MONGO_INITDB_ROOT_USERNAME=test@user
     #   - MONGO_INITDB_DATABASE=myDb
@@ -135,7 +147,7 @@ configs:
   my_config:
     file: ./node-docker/config.yaml
   nginx_config:
-    file: ./nginx.conf
+    file: ./nginx.dev.conf
 
 volumes:
   node_modules:

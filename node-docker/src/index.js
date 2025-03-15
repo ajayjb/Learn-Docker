@@ -5,6 +5,12 @@ import yaml from "js-yaml";
 import morgan from "morgan";
 import "dotenv/config";
 import mongoose from "mongoose";
+import path from 'path';
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+global.root_dirname = __dirname;
 
 const app = express();
 
@@ -35,7 +41,7 @@ const UserSchema = new mongoose.Schema(
 const UserModel = mongoose.model("User", UserSchema);
 
 app.get("/", (req, res) => {
-  return res.status(200).send("Hi there new world!");
+  return res.sendFile(path.join(root_dirname, "assets/coming.html"));
 });
 
 app.get("/getPassword", (req, res) => {
