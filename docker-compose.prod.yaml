@@ -1,6 +1,6 @@
 ---
 services:
-# To generate ssl certificates using lets encrypt
+  # To generate ssl certificates using lets encrypt
   # nginx:
   #   image: jonasal/nginx-certbot:latest
   #   ports:
@@ -22,12 +22,14 @@ services:
   #       condition: service_healthy
   #       restart: true
 
-# If we are using cloudfront full strict
+  # If we are using cloudfront full strict
   nginx:
     image: nginx:1.27.4-alpine
     ports:
       - 80:80
       - 443:443
+      - 5550:5550
+      - 5551:5551
     configs:
       - source: nginx_config
         target: /etc/nginx/nginx.conf
