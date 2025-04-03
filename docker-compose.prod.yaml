@@ -114,8 +114,8 @@ services:
     image: mongo
     # container_name: mongo-c
     restart: always
-    # ports:
-    #   - 27020:27017
+    ports:
+      - 27020:27017
     env_file:
       - ./mongo.prod.env
     # environment:
@@ -129,6 +129,24 @@ services:
       - mongo_database:/data/db
     networks:
       - private
+
+  # mongo-external:
+  #   image: mongo
+  #   # container_name: mongo-c
+  #   restart: always
+  #   ports:
+  #     - 27025:27017
+  #   env_file:
+  #     - ./mongo.prod.env
+  #   # environment:
+  #   #   - MONGO_INITDB_ROOT_USERNAME=test@user
+  #   #   - MONGO_INITDB_DATABASE=myDb
+  #   #   - MONGO_INITDB_ROOT_PASSWORD=Admin@123
+  #   # Password file for mongo not working not sure why thats why I have used env
+  #   secrets:
+  #     - mongo_password
+  #   volumes:
+  #     - mongo_database_external:/data/db
 
   mongo-express:
     image: mongo-express
@@ -180,7 +198,8 @@ volumes:
   # node_modules:
   pg_database:
   mongo_database:
-  nginx_secrets:
+  mongo_database_external:
+  # nginx_secrets:
 
 networks:
   private:

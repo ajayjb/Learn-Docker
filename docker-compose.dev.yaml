@@ -19,16 +19,16 @@ services:
     #     condition: service_healthy
     #     restart: true
 
-# env variables mentioned in compose enf-file and environment only available run time, 
-# we can stil pass arguments to build as agrs and use them in Dockerfile
+  # env variables mentioned in compose enf-file and environment only available run time,
+  # we can stil pass arguments to build as agrs and use them in Dockerfile
 
-# In this .env are placed at both service level and root (For learning),
-# In compose file we we just mention image tag, 
-# it will pull the image then we need .env in compose for for process run time, (if are not giving .env in Dockerfile)
-# .env files at root level to feed to the container (this is when we are not pushing service code to the server), 
+  # In this .env are placed at both service level and root (For learning),
+  # In compose file we we just mention image tag,
+  # it will pull the image then we need .env in compose for for process run time, (if are not giving .env in Dockerfile)
+  # .env files at root level to feed to the container (this is when we are not pushing service code to the server),
 
-# but if we are building image using compose file then .env are available at service file
-# are more then enough we dont need them at root level
+  # but if we are building image using compose file then .env are available at service file
+  # are more then enough we dont need them at root level
 
   node-app:
     # container_name: node-docker-c
@@ -89,6 +89,7 @@ services:
       POSTGRES_DB: mydb
       POSTGRES_PASSWORD_FILE: /run/secrets/pg_password
     secrets:
+      # Below we are loading to /run/secrets/ or you can use source and target to store to different location
       - pg_password
     volumes:
       - pg_database:/var/lib/postgresql/data
@@ -132,7 +133,7 @@ services:
     networks:
       - private
       - public
-  
+
   # alpine:
   #   image: alpine
   #   command: ping google.com
